@@ -3,6 +3,15 @@
 # Copyright (c) 2023 Nordic Semiconductor ASA
 # SPDX-License-Identifier: Apache-2.0
 
+config UART_$(nrfx_uart_num)_GPIO_MANAGEMENT
+	bool "GPIO pin state management on port $(nrfx_uart_num)"
+	depends on HAS_HW_NRF_UARTE$(nrfx_uart_num)
+	depends on PINCTRL
+	help
+	  When enabled, UART GPIO pins are set to sleep state (PINCTRL_STATE_SLEEP)
+	  when the UART is suspended and restored to default state when resumed.
+	  This reduces power consumption on battery-powered devices.
+
 config UART_$(nrfx_uart_num)_INTERRUPT_DRIVEN
 	bool "Interrupt support on port $(nrfx_uart_num)"
 	depends on UART_INTERRUPT_DRIVEN
