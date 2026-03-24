@@ -3,6 +3,12 @@
 # Enable MPU
 CONFIG_ARM_MPU=y
 
+# Enable hardware stack protection
+CONFIG_HW_STACK_PROTECTION=y
+
+# Enable RTT
+CONFIG_USE_SEGGER_RTT=y
+
 # enable GPIO
 CONFIG_GPIO=y
 
@@ -12,3 +18,7 @@ CONFIG_SERIAL=y
 # enable console
 CONFIG_CONSOLE=y
 CONFIG_UART_CONSOLE=y
+
+# Beadedstream: LFCLK source must be external full-swing oscillator
+# Without this, bootloader hangs at cold temps (<-20F) waiting for LFCLK switch
+CONFIG_CLOCK_CONTROL_NRF_K32SRC_EXT_FULL_SWING=y
