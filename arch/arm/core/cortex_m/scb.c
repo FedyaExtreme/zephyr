@@ -30,6 +30,19 @@
 #include <fsl_sysmpu.h>
 #endif
 
+/*
+ * CMSIS exposes the System Handler Priority block with different field names
+ * across core/header variants (`SHP` on some M0/M0+/M1 headers, `SHPR` on
+ * others). The block always starts at the same SCB offset, so use raw offset
+ * access here to stay independent of the header spelling.
+ */
+#define SCB_SHPR_OFFSET 0x18U
+
+static inline volatile uint32_t *scb_shpr(void)
+{
+	return (volatile uint32_t *)((uintptr_t)SCB + SCB_SHPR_OFFSET);
+}
+
 /**
  *
  * @brief Reset the system
@@ -179,13 +192,10 @@ void z_arm_save_scb_context(struct scb_context *context)
 
 	/*
 	 * Backup the System Handler Priority Registers.
-	 * SCB->SHPR is defined as u8[] or u32[] depending
-	 * on the target Cortex-M core, but it can always
-	 * be accessed using word-sized reads and writes.
-	 * Make u32 pointer using explicit cast to allow
-	 * access on all cores without compiler warnings.
+	 * Use fixed-offset access so the code works with both SHP and SHPR
+	 * CMSIS layouts.
 	 */
-	volatile uint32_t *shpr = (volatile uint32_t *)SCB->SHPR;
+	volatile uint32_t *shpr = scb_shpr();
 
 	for (int i = 0; i < SHPR_SIZE_W; i++) {
 		context->shpr[i] = shpr[i];
@@ -226,7 +236,7 @@ void z_arm_restore_scb_context(const struct scb_context *context)
 	SCB->CCR = context->ccr;
 
 	/* Restore System Handler Priority Registers */
-	volatile uint32_t *shpr = (volatile uint32_t *)SCB->SHPR;
+	volatile uint32_t *shpr = scb_shpr();
 
 	for (int i = 0; i < SHPR_SIZE_W; i++) {
 		shpr[i] = context->shpr[i];
